@@ -64,7 +64,7 @@ contract OptimizerV1 is Ownable, Pausable {
     /**
      * @dev Token swap route addresses 
      */    
-    address[] public DollarToBUSDRoute = [dollar, BUSD];
+    address[] public dollarToBUSDRoute;
 
 
     mapping(address => uint) public shareBalances;
@@ -84,6 +84,7 @@ contract OptimizerV1 is Ownable, Pausable {
         shareRewardPoolAddr = _shareRewardPool;
         boardroomAddr = _boardroom;
         pancakeRouter = _pancakeRouter;
+       dollarToBUSDRoute = [_dollar, BUSD];
         
         IERC20(LP).safeApprove(shareRewardPoolAddr, 0);
         IERC20(LP).safeApprove(shareRewardPoolAddr, MAX_INT);
@@ -97,30 +98,22 @@ contract OptimizerV1 is Ownable, Pausable {
     }
 
 
-    // @dev Deposit all the BDO-BUSD LP tokens owned by the contract to the target protocol
     function contractDepositAllLP() internal {
         LpStaked = LpStaked.add(IERC20(LP).balanceOf(address(this)));
-        // IERC20(LP).approve(shareRewardPoolAddr,IERC20(LP).balanceOf(address(this)));
         IShareRewardPool(shareRewardPoolAddr).deposit(poolId, IERC20(LP).balanceOf(address(this)));
     }
 
-    // @dev Withdraw an amount of BDO-BUSD LP tokens from the target protocol
-    // ...  Withdraw hardcoded to the Pool BDO-BUSD
-    // ...  TODO : pass the _pid in parameter
     function contractWithdrawLP(uint256 _amount) internal {
         IShareRewardPool(shareRewardPoolAddr).withdraw(poolId, _amount);
         LpStaked = LpStaked.sub(_amount);
     }
 
-    // @dev Claim rewards from the target protocol
-    // ...  Withdraw hardcoded to the Pool BDO-BUSD
     function contractClaimShare() internal {
         if(LpStaked > 0) {
             IShareRewardPool(shareRewardPoolAddr).withdraw(poolId, 0);
         }
     }
     
-    // @dev user will interact with this function to deposit their BDO-BUSD LP tokens 
     function userDepositLP(uint256 _amount) external onlyOwner {
         require(IERC20(LP).balanceOf(address(msg.sender)) >= _amount);
         IERC20(LP).safeTransferFrom(msg.sender, address(this), _amount);
@@ -129,7 +122,6 @@ contract OptimizerV1 is Ownable, Pausable {
     }
     
 
-    // @dev user will interact with this function to withdraw their _token (this function do not claim the earned sBDO)
     function userWithdrawLP(uint256 _amount) external onlyOwner {
         require(LPBalances[address(msg.sender)] >= _amount);
         contractWithdrawLP(_amount);
@@ -141,7 +133,6 @@ contract OptimizerV1 is Ownable, Pausable {
     function contractStakeAllShare() internal {
         if(IERC20(share).balanceOf(address(this)) > 0) {
             shareStaked = shareStaked.add(IERC20(share).balanceOf(address(this)));
-            //IERC20(share).approve(boardroomAddr,IERC20(share).balanceOf(address(this)));
             IBoardroom(boardroomAddr).stake(IERC20(share).balanceOf(address(this)));
         }
     }
@@ -153,7 +144,6 @@ contract OptimizerV1 is Ownable, Pausable {
         }    
     }
 
-    // @dev user will interact with this function to deposit their BDO-BUSD LP tokens 
     function userDepositShare(uint256 _amount) external onlyOwner {
         require(IERC20(share).balanceOf(address(msg.sender)) >= _amount);
         IERC20(share).safeTransferFrom(msg.sender, address(this), _amount);
@@ -182,7 +172,7 @@ contract OptimizerV1 is Ownable, Pausable {
     function harvest() external onlyOwner {
         //contractClaimDollar();
         uint256 dollarSplit = IERC20(dollar).balanceOf(address(this)).div(2);
-        IPancakeRouter(pancakeRouter).swapExactTokensForTokens(dollarSplit, 0, DollarToBUSDRoute, address(this), block.timestamp.add(600));
+        IPancakeRouter(pancakeRouter).swapExactTokensForTokens(dollarSplit, 0, dollarToBUSDRoute, address(this), block.timestamp.add(600));
         uint256 dollarBal = IERC20(dollar).balanceOf(address(this));
         uint256 busdBal = IERC20(BUSD).balanceOf(address(this));
         IPancakeRouter(pancakeRouter).addLiquidity(address(IERC20(dollar)), address(IERC20(BUSD)), dollarBal, busdBal, 1, 1, address(this), block.timestamp.add(600));
@@ -213,9 +203,7 @@ contract OptimizerV1 is Ownable, Pausable {
         IERC20(BUSD).safeTransfer(msg.sender, IERC20(BUSD).balanceOf(address(this)));
     }
 
-    /**
-     * @dev Pauses the strat.
-     */
+
     function pause() public onlyOwner {
         _pause();
 
@@ -225,9 +213,6 @@ contract OptimizerV1 is Ownable, Pausable {
         IERC20(BUSD).safeApprove(pancakeRouter, 0);
     }
 
-    /**
-     * @dev Unpauses the strat.
-     */
     function unpause() external onlyOwner {
         _unpause();
         IERC20(LP).safeApprove(shareRewardPoolAddr, MAX_INT);
