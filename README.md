@@ -1,46 +1,61 @@
-# bdollar Optimizer
-Yield Farming Simplifier for bDollar protocol on Binance Smart Chain
+# Seignorage Protocols Optimizer
 
-Objectives :
-Interact with bDollar and PancakeSwap Smart Contracts on Binance Smart Chain :
+## Objectives :
 
-- add BDO-BUSD LP Tokens
-- remove BDO-BUSD LP Tokens
-- claim BDO-BUSD Pool rewards (sBDO Tokens)
+Maximize yield of seignorage protocols on Binance Smart Chain.
 
-- add sBDO Tokens to sBDO Staking pools
-- remove sBDO Tokens from sBDO Staking pools
-- claim sBDO Staking pools rewards (BDO Tokens)
+## Supported Protocols :
 
-- swap BDO Tokens for sBDO Tokens using PancakeSwap
+- bDollar Finance
+https://bdollar.fi/
+
+- Monster Slayer Finance
+https://monsterslayer.finance/
 
 
+## Interface Description & Usage :
 
-Ressources : 
+### Share Reward Pool :
+- deposit Cake-LP Tokens to the Share Reward Pool of the target seignorage protocol
+- withdraw Cake-LP Tokens from the Share Reward Pool of the target seignorage protocol
+- claim SHARE Tokens rewards from the Share Reward Pool of the target seignorage protocol
 
-https://cryptozombies.io/en/course/
-https://github.com/loomnetwork/cryptozombies-lesson-code
+### Boardroom :
+- deposit SHARE Tokens to the Boardroom of the target seignorage protocol
+- withdraw SHARE Tokens from the Boardroom of the target seignorage protocol
+- claim DOLLAR Tokens rewards from the Boardroom of the target seignorage protocol
 
-https://github.com/bearn-defi/bdollar-smartcontracts
-
-https://bscscan.com/address/0x0fA31301EaA9633b3e4F7dF22F7543115759cf5a#code
-
-
-Claim sBDO (from BDO-BUSD Bank)
-Tx : https://bscscan.com/tx/0x90d26c68329cea4093702b44b0904d50c5ae635058986f897483294cc4fc4d33
-UML : https://bscscan.com/viewsvg?t=1&a=0x948db1713d4392ec04c86189070557c5a8566766
-
-Stake sBDO (in Boardroom sBDO Staking Pool)
-Tx : https://bscscan.com/tx/0x13c932d94f503f8d2986adbc74e4eee98e2a0973f2185ebcded7178cc63f0819
-UML : https://bscscan.com/viewsvg?t=1&a=0xce1a28db18415ec1947bd79865a4deec96ca7248
+### PancakeSwap :
+- swap DOLLAR Tokens for BUSD Tokens using PancakeSwap
+- add Liquidity to the pair DOLLAR - BUSD using PancakeSwap
 
 
 
-MONSTER SLAYER BOARDROOM CONTRACTS : 
-https://docs.monsterslayer.finance/misc./contract-info
+## BSC Mainnet Details :
 
-BoardRoom
-https://bscscan.com/address/0xbE8b66649ad3B93021630CDFB3B4f38e3b8B653E#code
+### OPTIMIZER V1 - bDollar (deployed on 07/03/2021)
+#### Address :
+0xD1D9C676297A1A3F1636b8a72E8A6Ae5B9e78D71
 
-Share Reward Pool
-https://bscscan.com/address/0x3646de962ff41462cc244b2379e7289b9b751be1#code
+#### Constructor Parameters :
+##### BUSD TOKEN (BUSD)
+0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56
+
+##### Cake-LP TOKEN (BDO-BUSD)
+0xc5b0d73A7c0E4eaF66baBf7eE16A2096447f7aD6
+
+##### SHARE TOKEN (sBDO)
+0x0d9319565be7f53CeFE84Ad201Be3f40feAE2740
+
+##### DOLLAR TOKEN (BDO)
+0x190b589cf9Fb8DDEabBFeae36a813FFb2A702454
+
+##### SHARE REWARD POOL (bDOLLAR)
+0x948dB1713D4392EC04C86189070557C5A8566766
+
+##### BOARDROOM (bDOLLAR)
+0x9D39cd20901c88030032073Fb014AaF79D84d2C5
+
+##### PANCAKE ROUTER 
+0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F
+
