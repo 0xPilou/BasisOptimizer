@@ -34,3 +34,11 @@ test/artifacts/BoardroomMock_metadata.json
 test/artifacts/BoardroomMock.json
 test/artifacts/shareRewardPoolMock_metadata.json
 test/artifacts/shareRewardPoolMock.json
+contract/artifacts/IBoardroom_metadata.json
+contract/artifacts/IBoardroom.json
+contract/artifacts/IPancakeRouter_metadata.json
+contract/artifacts/IPancakeRouter.json
+contract/artifacts/IShareRewardPool_metadata.json
+contract/artifacts/IShareRewardPool.json
+test/artifacts/IShareRewardPool_metadata.json
+test/artifacts/IShareRewardPool.json

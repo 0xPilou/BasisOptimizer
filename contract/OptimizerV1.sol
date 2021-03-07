@@ -1,18 +1,43 @@
 pragma solidity >=0.7.0 <0.8.0;
 
-// import "'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol";
-// import "'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/SafeERC20.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.4.0/contracts/math/SafeMath.sol";
 import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.4.0/contracts/utils/Context.sol';
 import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.4.0/contracts/utils/Pausable.sol';
 import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.4.0/contracts/access/Ownable.sol';
 import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.4.0/contracts/token/ERC20/SafeERC20.sol';
 
-import '../interfaces/IPancakeRouter.sol';
-import '../interfaces/IShareRewardPool.sol';
-import '../interfaces/IBoardroom.sol';
 
+interface IShareRewardPool {
+    function deposit(uint256 _pid, uint256 _amount) external;
+    function withdraw(uint256 _pid, uint256 _amount) external;
+}
 
+interface IBoardroom {
+    function stake(uint256 amount) external;
+    function withdraw(uint256 amount) external;
+    function claimReward() external;
+}
+
+interface IPancakeRouter {
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint amountADesired,
+        uint amountBDesired,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountA, uint amountB, uint liquidity);
+    
+    function swapExactTokensForTokens(
+        uint amountIn, 
+        uint amountOutMin, 
+        address[] calldata path, 
+        address to, 
+        uint deadline
+    ) external returns (uint[] memory amounts);
+}
 
 contract OptimizerV1 is Ownable, Pausable {
     using SafeERC20 for IERC20;
@@ -21,59 +46,84 @@ contract OptimizerV1 is Ownable, Pausable {
     
     uint256 MAX_INT = 2**256 - 1;
 
-    address constant public shareRewardPoolAddr = 0xDA0bab807633f07f013f94DD0E6A4F96F8742B53;
-    address constant public boardroomAddr = 0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3;
-    address constant public pancakeRouter = 0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F;
+    /**
+     * @dev Interfacing contracts addresses
+     */
+    address public shareRewardPoolAddr;
+    address public boardroomAddr;
+    address public pancakeRouter;
+    
+    /**
+     * @dev Tokens addresses
+     */    
+    address public LP;
+    address public share;
+    address public dollar;
+    address public BUSD = 0xf8e81D47203A594245E36C48e151709F0C19fBe8;
+    
+    /**
+     * @dev Token swap route addresses 
+     */    
+    address[] public DollarToBUSDRoute = [dollar, BUSD];
 
-
-    IERC20 tokenLP = IERC20(0xd9145CCE52D386f254917e481eB44e9943F39138);
-    IERC20 tokenShare = IERC20(0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8);
-    IERC20 tokenDollar = IERC20(0xf8e81D47203A594245E36C48e151709F0C19fBe8);
-    IERC20 tokenBUSD = IERC20(0xf8e81D47203A594245E36C48e151709F0C19fBe8);
-
-    IShareRewardPool shareRewardPoolContract = IShareRewardPool(shareRewardPoolAddr);
-    IBoardroom boardroomContract = IBoardroom(boardroomAddr);
-
-
-    address[] public DollarToBUSDRoute = [address(tokenDollar), address(tokenBUSD)];
 
     mapping(address => uint) public shareBalances;
     mapping(address => uint) public LPBalances;
     
-    // Quantity of LP tokens (BDO-BUSD LP) owned by the contract
     uint256 public LpStaked = 0;
     uint256 public shareStaked = 0;
+    uint8 public poolId = 0;
+
+    /**
+     * @dev Initializes the strategy for the given protocol
+     */
+    constructor(address _LP, address _share, address _dollar, address _shareRewardPool, address _boardroom, address _pancakeRouter) {
+        LP = _LP;
+        share = _share;
+        dollar = _dollar;
+        shareRewardPoolAddr = _shareRewardPool;
+        boardroomAddr = _boardroom;
+        pancakeRouter = _pancakeRouter;
+        
+        IERC20(LP).safeApprove(shareRewardPoolAddr, 0);
+        IERC20(LP).safeApprove(shareRewardPoolAddr, MAX_INT);
+        IERC20(share).safeApprove(boardroomAddr, 0);
+        IERC20(share).safeApprove(boardroomAddr, MAX_INT);
+        IERC20(dollar).safeApprove(pancakeRouter, 0);
+        IERC20(dollar).safeApprove(pancakeRouter, MAX_INT);
+        IERC20(BUSD).safeApprove(pancakeRouter, 0);
+        IERC20(BUSD).safeApprove(pancakeRouter, MAX_INT);
+        
+    }
 
 
     // @dev Deposit all the BDO-BUSD LP tokens owned by the contract to the target protocol
     function contractDepositAllLP() internal {
-        LpStaked = LpStaked.add(tokenLP.balanceOf(address(this)));
-        // tokenLP.approve(shareRewardPoolAddr,tokenLP.balanceOf(address(this)));
-        shareRewardPoolContract.deposit(0, tokenLP.balanceOf(address(this)));
+        LpStaked = LpStaked.add(IERC20(LP).balanceOf(address(this)));
+        // IERC20(LP).approve(shareRewardPoolAddr,IERC20(LP).balanceOf(address(this)));
+        IShareRewardPool(shareRewardPoolAddr).deposit(poolId, IERC20(LP).balanceOf(address(this)));
     }
 
     // @dev Withdraw an amount of BDO-BUSD LP tokens from the target protocol
     // ...  Withdraw hardcoded to the Pool BDO-BUSD
     // ...  TODO : pass the _pid in parameter
     function contractWithdrawLP(uint256 _amount) internal {
-        shareRewardPoolContract.withdraw(0, _amount);
+        IShareRewardPool(shareRewardPoolAddr).withdraw(poolId, _amount);
         LpStaked = LpStaked.sub(_amount);
     }
 
     // @dev Claim rewards from the target protocol
     // ...  Withdraw hardcoded to the Pool BDO-BUSD
-    // ...  TODO : pass the _pid in parameter
     function contractClaimShare() internal {
         if(LpStaked > 0) {
-            shareRewardPoolContract.withdraw(0, 0);
+            IShareRewardPool(shareRewardPoolAddr).withdraw(poolId, 0);
         }
     }
     
-
     // @dev user will interact with this function to deposit their BDO-BUSD LP tokens 
     function userDepositLP(uint256 _amount) external onlyOwner {
-        require(tokenLP.balanceOf(address(msg.sender)) >= _amount);
-        tokenLP.safeTransferFrom(msg.sender, address(this), _amount);
+        require(IERC20(LP).balanceOf(address(msg.sender)) >= _amount);
+        IERC20(LP).safeTransferFrom(msg.sender, address(this), _amount);
         LPBalances[msg.sender] = LPBalances[msg.sender].add(_amount);
         contractDepositAllLP();
     }
@@ -83,59 +133,59 @@ contract OptimizerV1 is Ownable, Pausable {
     function userWithdrawLP(uint256 _amount) external onlyOwner {
         require(LPBalances[address(msg.sender)] >= _amount);
         contractWithdrawLP(_amount);
-        tokenLP.safeTransfer(msg.sender, _amount);
+        IERC20(LP).safeTransfer(msg.sender, _amount);
         LPBalances[address(msg.sender)] = LPBalances[address(msg.sender)].sub(_amount);
     }
     
     
-    function contractStakeAllShare() internal onlyOwner {
-        if(tokenShare.balanceOf(address(this)) > 0) {
-            shareStaked = shareStaked.add(tokenShare.balanceOf(address(this)));
-            //tokenShare.approve(boardroomAddr,tokenShare.balanceOf(address(this)));
-            boardroomContract.stake(tokenShare.balanceOf(address(this)));
+    function contractStakeAllShare() internal {
+        if(IERC20(share).balanceOf(address(this)) > 0) {
+            shareStaked = shareStaked.add(IERC20(share).balanceOf(address(this)));
+            //IERC20(share).approve(boardroomAddr,IERC20(share).balanceOf(address(this)));
+            IBoardroom(boardroomAddr).stake(IERC20(share).balanceOf(address(this)));
         }
     }
     
     function contractWithdrawAllShare() internal {
         if(shareStaked > 0) {
-            boardroomContract.withdraw(shareStaked);
+            IBoardroom(boardroomAddr).withdraw(shareStaked);
             shareStaked = 0;
         }    
     }
 
     // @dev user will interact with this function to deposit their BDO-BUSD LP tokens 
     function userDepositShare(uint256 _amount) external onlyOwner {
-        require(tokenShare.balanceOf(address(msg.sender)) >= _amount);
-        tokenShare.safeTransferFrom(msg.sender, address(this), _amount);
+        require(IERC20(share).balanceOf(address(msg.sender)) >= _amount);
+        IERC20(share).safeTransferFrom(msg.sender, address(this), _amount);
         contractStakeAllShare();
     }
     
     function userWithdrawShare() external onlyOwner {
         contractWithdrawAllShare();
-        tokenShare.safeTransfer(msg.sender, tokenShare.balanceOf(address(this)));
+        IERC20(share).safeTransfer(msg.sender, IERC20(share).balanceOf(address(this)));
     }
     
     
-    function contractClaimDollar() internal onlyOwner {
+    function contractClaimDollar() external onlyOwner {
         if(shareStaked > 0) {
-            boardroomContract.claimReward();   
+            IBoardroom(boardroomAddr).claimReward();   
         }
     }
 
 
-    /**
-     * @dev Swaps {bdo} for {busd} and add liquidity to the BDO-BUSD Pool using PancakeSwap.
-     */
-    function harvest() external onlyOwner {
-        contractClaimDollar();
-        uint256 dollarSplit = tokenDollar.balanceOf(address(this)).div(2);
-        
-        IPancakeRouter(pancakeRouter).swapExactTokensForTokens(dollarSplit, 0, DollarToBUSDRoute, address(this), block.timestamp.add(600));
+    function compoundShare() external onlyOwner {
+        contractClaimShare();
+        contractStakeAllShare();
+    }
 
-        uint256 dollarBal = tokenDollar.balanceOf(address(this));
-        uint256 busdBal = tokenBUSD.balanceOf(address(this));
-        
-        IPancakeRouter(pancakeRouter).addLiquidity(address(tokenDollar), address(tokenBUSD), dollarBal, busdBal, 1, 1, address(this), block.timestamp.add(600));
+
+    function harvest() external onlyOwner {
+        //contractClaimDollar();
+        uint256 dollarSplit = IERC20(dollar).balanceOf(address(this)).div(2);
+        IPancakeRouter(pancakeRouter).swapExactTokensForTokens(dollarSplit, 0, DollarToBUSDRoute, address(this), block.timestamp.add(600));
+        uint256 dollarBal = IERC20(dollar).balanceOf(address(this));
+        uint256 busdBal = IERC20(BUSD).balanceOf(address(this));
+        IPancakeRouter(pancakeRouter).addLiquidity(address(IERC20(dollar)), address(IERC20(BUSD)), dollarBal, busdBal, 1, 1, address(this), block.timestamp.add(600));
         contractDepositAllLP();
         contractStakeAllShare();
     }
@@ -143,24 +193,24 @@ contract OptimizerV1 is Ownable, Pausable {
     function exitAvalanche() external onlyOwner {
         contractWithdrawLP(LpStaked);
         contractWithdrawAllShare();
-        tokenLP.safeTransfer(msg.sender, tokenLP.balanceOf(address(this)));
-        tokenShare.safeTransfer(msg.sender, tokenShare.balanceOf(address(this)));
+        IERC20(LP).safeTransfer(msg.sender, IERC20(LP).balanceOf(address(this)));
+        IERC20(share).safeTransfer(msg.sender, IERC20(share).balanceOf(address(this)));
     }
     
     function withdrawLP() external onlyOwner {
-        tokenLP.safeTransfer(msg.sender, tokenLP.balanceOf(address(this)));
+        IERC20(LP).safeTransfer(msg.sender, IERC20(LP).balanceOf(address(this)));
     }
     
     function withdrawShare() external onlyOwner {
-        tokenShare.safeTransfer(msg.sender, tokenShare.balanceOf(address(this)));
+        IERC20(share).safeTransfer(msg.sender, IERC20(share).balanceOf(address(this)));
     }
     
     function withdrawDollar() external onlyOwner {
-        tokenDollar.safeTransfer(msg.sender, tokenDollar.balanceOf(address(this)));
+        IERC20(dollar).safeTransfer(msg.sender, IERC20(dollar).balanceOf(address(this)));
     }
     
     function withdrawBUSD() external onlyOwner {
-        tokenBUSD.safeTransfer(msg.sender, tokenBUSD.balanceOf(address(this)));
+        IERC20(BUSD).safeTransfer(msg.sender, IERC20(BUSD).balanceOf(address(this)));
     }
 
     /**
@@ -169,10 +219,10 @@ contract OptimizerV1 is Ownable, Pausable {
     function pause() public onlyOwner {
         _pause();
 
-        tokenLP.safeApprove(shareRewardPoolAddr, 0);
-        tokenShare.safeApprove(boardroomAddr, 0);
-        tokenDollar.safeApprove(pancakeRouter, 0);
-        tokenBUSD.safeApprove(pancakeRouter, 0);
+        IERC20(LP).safeApprove(shareRewardPoolAddr, 0);
+        IERC20(share).safeApprove(boardroomAddr, 0);
+        IERC20(dollar).safeApprove(pancakeRouter, 0);
+        IERC20(BUSD).safeApprove(pancakeRouter, 0);
     }
 
     /**
@@ -180,9 +230,9 @@ contract OptimizerV1 is Ownable, Pausable {
      */
     function unpause() external onlyOwner {
         _unpause();
-        tokenLP.safeApprove(shareRewardPoolAddr, MAX_INT);
-        tokenShare.safeApprove(boardroomAddr, MAX_INT);
-        tokenDollar.safeApprove(pancakeRouter, MAX_INT);
-        tokenBUSD.safeApprove(pancakeRouter, MAX_INT);
+        IERC20(LP).safeApprove(shareRewardPoolAddr, MAX_INT);
+        IERC20(share).safeApprove(boardroomAddr, MAX_INT);
+        IERC20(dollar).safeApprove(pancakeRouter, MAX_INT);
+        IERC20(BUSD).safeApprove(pancakeRouter, MAX_INT);
     }
 }    
