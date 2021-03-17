@@ -4,9 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./Optimizer.sol";
 
-
 contract OptimizerFactory {
-//    Optimizer[] public optimizers;
     address[] public optimizers;
     Protocol[] public protocols;
 
@@ -20,15 +18,6 @@ contract OptimizerFactory {
     }
     
     mapping(address => address[]) public optimizerByOwner; 
-
-//    function createOptimizer(uint256 _protocolId) external {
-//        Protocol memory protocol = protocols[_protocolId];
-//        Optimizer optimizer = new Optimizer(protocol.LP, protocol.share, protocol.dollar, protocol.shareRewardPool, protocol.boardroom);
-//        optimizers.push(optimizer);
-//        optimizerByOwner[msg.sender].push(optimizer);
-//        optimizer.transferOwnership(msg.sender);
-//        optimizer.renounceOwnership();
-//    }
 
     function createOptimizer(uint256 _protocolId) external returns(address newOptimizer) {
         Protocol memory protocol = protocols[_protocolId];
@@ -44,14 +33,6 @@ contract OptimizerFactory {
         return optimizers.length;
     } 
     
-//   function harvestAll() external {
-//       require(optimizerByOwner[msg.sender].length > 0);
-//       Optimizer[] memory ownersOptimizers = optimizerByOwner[msg.sender];
-//       for (uint i = 0; i < ownersOptimizers.length; i++) {
-//           ownersOptimizers[i].harvest();
-//       }
-//   }
-
     function harvestAll() external {
         require(optimizerByOwner[msg.sender].length > 0);
         address[] memory ownerOptimizers = optimizerByOwner[msg.sender];
