@@ -1,8 +1,9 @@
 pragma solidity >=0.7.0 <0.8.0;
 
-import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.4.0/contracts/token/ERC20/SafeERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol';
 
-contract shareRewardPoolMock {
+
+contract ShareRewardPoolMock {
 
     using SafeERC20 for IERC20;
 
@@ -19,10 +20,14 @@ contract shareRewardPoolMock {
         if (_amount > 0) {
             bdoBusdLp.transfer(msg.sender, _amount);
             if(sbdo.balanceOf(address(this)) > 0) {
-                sbdo.transfer(msg.sender, sbdo.balanceOf(address(this)));
+                sbdo.transfer(msg.sender, sbdo.balanceOf(address(this))/100);
             }
         } else {
-            sbdo.transfer(msg.sender, sbdo.balanceOf(address(this)));
+            sbdo.transfer(msg.sender, sbdo.balanceOf(address(this))/100);
         }
     }
+
+        function pendingShare(uint256 _pid, address _user) external view returns (uint256){
+            return 888888888888888;
+        }
 }

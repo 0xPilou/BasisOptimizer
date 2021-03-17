@@ -1,6 +1,6 @@
 pragma solidity >=0.7.0 <0.8.0;
 
-import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.4.0/contracts/token/ERC20/SafeERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol';
 
 
 contract BoardroomMock {
@@ -20,7 +20,7 @@ contract BoardroomMock {
     }
 
     function claimReward() public {
-        bdo.transfer(msg.sender, bdo.balanceOf(address(this)));
+        bdo.transfer(msg.sender, bdo.balanceOf(address(this))/100);
     }
     
 }

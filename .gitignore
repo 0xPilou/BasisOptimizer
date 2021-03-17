@@ -42,3 +42,5 @@ contract/artifacts/IShareRewardPool_metadata.json
 contract/artifacts/IShareRewardPool.json
 test/artifacts/IShareRewardPool_metadata.json
 test/artifacts/IShareRewardPool.json
+build/contracts
+node_modules/
