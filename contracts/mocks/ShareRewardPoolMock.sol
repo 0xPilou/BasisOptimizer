@@ -7,23 +7,28 @@ contract ShareRewardPoolMock {
 
     using SafeERC20 for IERC20;
 
-    IERC20 bdoBusdLp = IERC20(0xd9145CCE52D386f254917e481eB44e9943F39138);
-    IERC20 sbdo = IERC20(0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8);
+    address lp;
+    address share;
+
+    constructor(address _lp, address _share) {
+        lp = _lp;
+        share = _share;
+    }
 
     function deposit(uint256 _pid, uint256 _amount) external {
         address _sender = msg.sender;
-        bdoBusdLp.transferFrom(_sender, address(this), _amount);
+        IERC20(lp).transferFrom(_sender, address(this), _amount);
     }
 
     // Withdraw LP tokens.
     function withdraw(uint256 _pid, uint256 _amount) external {
         if (_amount > 0) {
-            bdoBusdLp.transfer(msg.sender, _amount);
-            if(sbdo.balanceOf(address(this)) > 0) {
-                sbdo.transfer(msg.sender, sbdo.balanceOf(address(this))/100);
+            IERC20(lp).transfer(msg.sender, _amount);
+            if(IERC20(share).balanceOf(address(this)) > 0) {
+                IERC20(share).transfer(msg.sender, IERC20(share).balanceOf(address(this))/100);
             }
         } else {
-            sbdo.transfer(msg.sender, sbdo.balanceOf(address(this))/100);
+            IERC20(share).transfer(msg.sender, IERC20(share).balanceOf(address(this))/100);
         }
     }
 

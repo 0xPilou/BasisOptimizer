@@ -8,19 +8,23 @@ contract BoardroomMock {
     using SafeERC20 for IERC20;
 
 
-    IERC20 sbdo = IERC20(0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8);
-    IERC20 bdo = IERC20(0xf8e81D47203A594245E36C48e151709F0C19fBe8);
+    address share;
+    address dollar;
 
+    constructor(address _share, address _dollar) {
+        share = _share;
+        dollar = _dollar;
+    }
     function stake(uint256 _amount) public {
-        sbdo.transferFrom(msg.sender, address(this), _amount);
+        IERC20(share).transferFrom(msg.sender, address(this), _amount);
     }
 
     function withdraw(uint256 amount) public {
-        sbdo.transfer(msg.sender, amount);
+        IERC20(share).transfer(msg.sender, amount);
     }
 
     function claimReward() public {
-        bdo.transfer(msg.sender, bdo.balanceOf(address(this))/100);
+        IERC20(dollar).transfer(msg.sender, IERC20(dollar).balanceOf(address(this))/100);
     }
     
 }
