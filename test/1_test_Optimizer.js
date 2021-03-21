@@ -26,18 +26,20 @@ contract("Optimizer Unit Tests", async (deployer, network, [owner])=> {
 
 
     });
-    it("should get the number of protocols supported", async () => {
-        let optimizerFactory = (await OptimizerFactory.deployed());
-        const lp = (await LP.deployed());
-        const share = (await Share.deployed());
-        const dollar = (await Dollar.deployed());
-        const boardroom = (await BoardroomMock.deployed());
-        const shareRewardPool = (await ShareRewardPoolMock.deployed());
-        await optimizerFactory.addProtocol(lp.address, share.address, dollar.address, shareRewardPool.address, boardroom.address);
-        const result = await optimizerFactory.getProtocolCount();
-        assert.equal(result.toNumber(), 2);
+    it("should withdraw LP from the Share Reward Pool", async () => {
+
     });
 
+    it("should deposit Share to the Boardroom", async () => {
 
+    });
+
+    it("should withdraw Share from the Boardroom", async () => {
+
+    });
+
+    it("should ...", async () => {
+
+    });
 
 });
