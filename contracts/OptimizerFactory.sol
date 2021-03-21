@@ -29,10 +29,6 @@ contract OptimizerFactory is Ownable {
         return address(optimizer);
     }
 
-    function getOptimizerCount() external view returns(uint optimizerCount) {
-        return optimizers.length;
-    } 
-    
     function harvestAll() external {
         require(optimizerByOwner[msg.sender].length > 0);
         address[] memory ownerOptimizers = optimizerByOwner[msg.sender];
@@ -57,6 +53,14 @@ contract OptimizerFactory is Ownable {
         newProtocol.boardroom = _boardroom;
         protocols.push(newProtocol);
         return newProtocol.protocolId;
+    }
+
+    function getOptimizerCount() external view returns(uint) {
+        return optimizers.length;
+    } 
+    
+    function getProtocolCount() external view returns(uint) {
+        return protocols.length;
     }
 
 }
