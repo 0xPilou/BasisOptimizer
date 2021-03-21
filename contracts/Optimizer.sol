@@ -59,7 +59,7 @@ contract Optimizer is Ownable {
      */
     address public shareRewardPoolAddr;
     address public boardroomAddr;
-    address public pancakeRouter = 0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F;
+    address public pancakeRouter;// = 0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F;
     
     /**
      * @dev Tokens addresses
@@ -67,7 +67,7 @@ contract Optimizer is Ownable {
     address public LP;
     address public share;
     address public dollar;
-    address public BUSD = 0xf8e81D47203A594245E36C48e151709F0C19fBe8;
+    address public BUSD; //= 0xf8e81D47203A594245E36C48e151709F0C19fBe8;
     
     /**
      * @dev Token swap route addresses 
@@ -94,10 +94,10 @@ contract Optimizer is Ownable {
         IERC20(LP).safeApprove(shareRewardPoolAddr, MAX_INT);
         IERC20(share).safeApprove(boardroomAddr, 0);
         IERC20(share).safeApprove(boardroomAddr, MAX_INT);
-        IERC20(dollar).safeApprove(pancakeRouter, 0);
-        IERC20(dollar).safeApprove(pancakeRouter, MAX_INT);
-        IERC20(BUSD).safeApprove(pancakeRouter, 0);
-        IERC20(BUSD).safeApprove(pancakeRouter, MAX_INT);
+        //IERC20(dollar).safeApprove(pancakeRouter, 0);
+        //IERC20(dollar).safeApprove(pancakeRouter, MAX_INT);
+        //IERC20(BUSD).safeApprove(pancakeRouter, 0);
+        //IERC20(BUSD).safeApprove(pancakeRouter, MAX_INT);
         
     }
 
