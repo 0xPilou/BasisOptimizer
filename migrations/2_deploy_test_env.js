@@ -6,6 +6,7 @@ const ShareRewardPoolMock = artifacts.require("ShareRewardPoolMock");
 const BoardroomMock = artifacts.require("BoardroomMock");
 
 
+
 module.exports = (deployer, network, [owner]) => deployer
   .then(() => deployLP(deployer))
   .then(() => deployShare(deployer))
@@ -13,9 +14,7 @@ module.exports = (deployer, network, [owner]) => deployer
   .then(() => deployBoardroom(deployer))
   .then(() => deployShareRewardPool(deployer))
   .then(() => transferShareToShareRewardPool(owner))
-  .then(() => transferDollarToBoardroom(owner))
-  .then(() => displaySummary(owner));
-
+  .then(() => transferDollarToBoardroom(owner));
 
 function deployLP(deployer) {
   return deployer.deploy(LP, "Cake-LP bDollar", "BDO-BUSD");
@@ -49,42 +48,4 @@ async function transferDollarToBoardroom(owner) {
   const boardroomMock = (await BoardroomMock.deployed());
   var amountToTransfer = (await dollar.balanceOf(owner));
   return dollar.transfer(boardroomMock.address, amountToTransfer);
-}
-
-async function displaySummary(owner) {
-  const lp = (await LP.deployed());
-  const share = (await Share.deployed());
-  const dollar = (await Dollar.deployed());
-  const boardroomMock = (await BoardroomMock.deployed());
-  const shareRewardPoolMock = (await ShareRewardPoolMock.deployed());
-
-  console.log(
-    `===================================================
-    Deployed Contracts Addresses :
-
-        > LP :                  ${lp.address}
-        > Share :               ${share.address}
-        > Dollar :              ${dollar.address}
-        > Boardroom :           ${boardroomMock.address}
-        > Share Reward Pool :   ${shareRewardPoolMock.address}
-
-    ===================================================
-    Balances:
-
-        > Owner :
-            LP :      ${await lp.balanceOf(owner)}
-            Share :   ${await share.balanceOf(owner)}
-            Dollar :  ${await dollar.balanceOf(owner)}
-
-        > Share Reward Pool :
-            LP :      ${await lp.balanceOf(shareRewardPoolMock.address)}
-            Share :   ${await share.balanceOf(shareRewardPoolMock.address)}
-            Dollar :  ${await dollar.balanceOf(shareRewardPoolMock.address)}
-
-        > Boardroom :
-            LP :      ${await lp.balanceOf(boardroomMock.address)}
-            Share :   ${await share.balanceOf(boardroomMock.address)}
-            Dollar :  ${await dollar.balanceOf(boardroomMock.address)}
-
-    ===================================================`);
 }
