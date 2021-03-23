@@ -55,11 +55,15 @@ contract("Optimizer Unit Tests", () => {
         assert.equal(optimizerShareBal_after - optimizerShareBal_before, poolShareBal_before - poolShareBal_after);
     });
     it("should deposit Share to the Boardroom", async () => {
-        const amountToDeposit = web3.utils.toWei('2000', 'ether');
+        const amountToDeposit = await share.balanceOf(accounts[0]);  
+        const optimizerShareBal = await share.balanceOf(optimizer.address);      
+
         await share.approve(optimizer.address, amountToDeposit);
         await optimizer.depositShare(amountToDeposit);
-        const boardRoomBal = await share.balanceOf(BoardroomMock.address);      
-        assert.equal(boardRoomBal, amountToDeposit);           
+        
+        const expectedBoardroomBal = optimizerShareBal.add(amountToDeposit); 
+        const boardRoomBal = web3.utils.fromWei(await share.balanceOf(BoardroomMock.address));      
+        assert.equal(boardRoomBal, web3.utils.fromWei(expectedBoardroomBal.toString()));           
     });
 
   // it("should withdraw Share from the Boardroom", async () => {

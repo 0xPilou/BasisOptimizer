@@ -44,3 +44,4 @@ test/artifacts/IShareRewardPool_metadata.json
 test/artifacts/IShareRewardPool.json
 build/contracts
 node_modules/
+package-lock.json

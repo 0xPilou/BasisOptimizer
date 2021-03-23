@@ -39,8 +39,9 @@ async function deployShareRewardPool(deployer) {
 async function transferShareToShareRewardPool(owner) {
   const share = (await Share.deployed());
   const shareRewardPoolMock = (await ShareRewardPoolMock.deployed());
-  var amountToTransfer = (await share.balanceOf(owner));
-  return share.transfer(shareRewardPoolMock.address, amountToTransfer);
+  var ownerBalance = web3.utils.fromWei(await share.balanceOf(owner));
+  var amountToTransfer = ownerBalance * 0.99;
+  return share.transfer(shareRewardPoolMock.address, web3.utils.toWei(amountToTransfer.toString()));
 }
 
 async function transferDollarToBoardroom(owner) {

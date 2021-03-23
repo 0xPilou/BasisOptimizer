@@ -63,29 +63,29 @@ async function displaySummary(owner) {
     Balances:
 
         > Owner :
-            LP :      ${await lp.balanceOf(owner)}
-            Share :   ${await share.balanceOf(owner)}
-            Dollar :  ${await dollar.balanceOf(owner)}
+            LP :      ${web3.utils.fromWei(await lp.balanceOf(owner))}
+            Share :   ${web3.utils.fromWei(await share.balanceOf(owner))}
+            Dollar :  ${web3.utils.fromWei(await dollar.balanceOf(owner))}
 
         > Share Reward Pool :
-            LP :      ${await lp.balanceOf(shareRewardPoolMock.address)}
-            Share :   ${await share.balanceOf(shareRewardPoolMock.address)}
-            Dollar :  ${await dollar.balanceOf(shareRewardPoolMock.address)}
+            LP :      ${web3.utils.fromWei(await lp.balanceOf(shareRewardPoolMock.address))}
+            Share :   ${web3.utils.fromWei(await share.balanceOf(shareRewardPoolMock.address))}
+            Dollar :  ${web3.utils.fromWei(await dollar.balanceOf(shareRewardPoolMock.address))}
 
         > Boardroom :
-            LP :      ${await lp.balanceOf(boardroomMock.address)}
-            Share :   ${await share.balanceOf(boardroomMock.address)}
-            Dollar :  ${await dollar.balanceOf(boardroomMock.address)}
+            LP :      ${web3.utils.fromWei(await lp.balanceOf(boardroomMock.address))}
+            Share :   ${web3.utils.fromWei(await share.balanceOf(boardroomMock.address))}
+            Dollar :  ${web3.utils.fromWei(await dollar.balanceOf(boardroomMock.address))}
 
         > Optimizer Factory :
-            LP :      ${await lp.balanceOf(optimizerFactory.address)}
-            Share :   ${await share.balanceOf(optimizerFactory.address)}
-            Dollar :  ${await dollar.balanceOf(optimizerFactory.address)}
+            LP :      ${web3.utils.fromWei(await lp.balanceOf(optimizerFactory.address))}
+            Share :   ${web3.utils.fromWei(await share.balanceOf(optimizerFactory.address))}
+            Dollar :  ${web3.utils.fromWei(await dollar.balanceOf(optimizerFactory.address))}
 
         > Optimizer :
-            LP :      ${await lp.balanceOf(optimizer.address)}
-            Share :   ${await share.balanceOf(optimizer.address)}
-            Dollar :  ${await dollar.balanceOf(optimizer.address)}                                    
+            LP :      ${web3.utils.fromWei(await lp.balanceOf(optimizer.address))}
+            Share :   ${web3.utils.fromWei(await share.balanceOf(optimizer.address))}
+            Dollar :  ${web3.utils.fromWei(await dollar.balanceOf(optimizer.address))}                                    
 
 
     ===================================================`);
