@@ -25,7 +25,6 @@ contract OptimizerFactory is Ownable {
         optimizers.push(address(optimizer));
         optimizerByOwner[msg.sender].push(address(optimizer));
         optimizer.transferOwnership(msg.sender);
-        optimizer.renounceOwnership();
         return address(optimizer);
     }
 
