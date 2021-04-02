@@ -2,16 +2,18 @@ import React, { Component } from 'react';
 import { DrizzleProvider } from '@drizzle/react-plugin';
 import { LoadingContainer } from '@drizzle/react-components';
 import drizzleOptions from './drizzleOptions';
-import MyComponent from './MyComponent';
+import OptimizerFactoryComponent from './OptimizerFactoryComponent';
+
 
 class App extends Component {
   render() {
     return (
       <DrizzleProvider options={drizzleOptions}>
         <LoadingContainer>
-          <MyComponent />
+          <OptimizerFactoryComponent />
         </LoadingContainer>
       </DrizzleProvider>
+
     );
   }
 }
