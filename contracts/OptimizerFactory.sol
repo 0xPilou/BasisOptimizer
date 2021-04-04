@@ -62,6 +62,9 @@ contract OptimizerFactory is Ownable {
         return protocols.length;
     }
 
+    function getOwnerOptimizers(address _owner) external view returns(address[] memory) {
+        return optimizerByOwner[_owner];
+    }
 }
 
 

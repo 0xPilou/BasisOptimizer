@@ -20,6 +20,8 @@ interface IOptimizerFactory {
     
     function getProtocolCount() external view returns(uint);
 
+    function getOwnerOptimizers(address _owner) external view returns(address[] memory) ;
+
 }
 
 
