@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import getBlockchain from './ethereum.js';
 
+
 function App() {
   const [optimizerFactory, setOptimizerFactory] = useState(undefined);
   const [protocolCount, setProtocolCount] = useState(undefined);
   const [optimizerCount, setOptimizerCount] = useState(undefined);
+  const [protocols, setProtocols] = useState(undefined);
 
   useEffect(() => {
     const init = async () => {
       const { optimizerFactory } = await getBlockchain();
       const protocolCount = await optimizerFactory.getProtocolCount();
       const optimizerCount = await optimizerFactory.getOptimizerCount();
+      //const protocols = await optimizerFactory.protocols;
 
+      //const optimizers = optimizerFactory.optimizerByOwner(0x364446a42b32Ea6E87e1FcdED4e9E7771736144e)
       setOptimizerFactory(optimizerFactory);
       setProtocolCount(protocolCount);
-      setOptimizerCount(optimizerCount);
+      setOptimizerCount(optimizerCount);     
+      //setProtocols(protocols);
 
-
-      
     };
     init();
   }, []);
@@ -48,13 +51,16 @@ function App() {
     );
     await tx.wait();
     const protocolCount = await optimizerFactory.getProtocolCount();
+    //const protocols = await optimizerFactory.protocols;
     setProtocolCount(protocolCount);
+    //setProtocols(protocols);
   };
 
   if(
     typeof optimizerFactory === 'undefined'
     || typeof protocolCount === 'undefined'
     || typeof optimizerCount === 'undefined'
+    //|| typeof protocols === 'undefined'
 
   ) {
     return 'Loading...';
@@ -68,6 +74,7 @@ function App() {
           <h2>Protocols:</h2>
           <h3>Supported:</h3>
           <p>{protocolCount.toString()}</p>
+
           <h3>Add Protocol:</h3>
           <form className="form-inline" onSubmit={e => addProtocol(e)}>
             <input 
@@ -102,12 +109,15 @@ function App() {
               Submit
             </button>
           </form>
+        
         </div>
+
         <div className='col-sm-6'>
           <h2>Optimizers:</h2>
           <h3>Created by the Factory:</h3>
           <p>{optimizerCount.toString()}</p>
-          <h2>Create Optimizer</h2>
+
+          <h3>Create Optimizer</h3>
           <form className="form-inline" onSubmit={e => createOptimizer(e)}>
             <input 
               type="text" 

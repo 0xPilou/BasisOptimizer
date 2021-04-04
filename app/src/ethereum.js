@@ -23,4 +23,11 @@ const getBlockchain = () =>
     reject('Install Metamask');
   });
 
+//const getAccounts = () =>
+//  new Promise( async (resolve) => {
+//    let provider = await detectEthereumProvider();
+//    provider = new ethers.providers.Web3Provider(provider);
+//    const signer = provider.getAccounts();
+//  });
+
 export default getBlockchain;
