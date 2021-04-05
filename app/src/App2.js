@@ -18,7 +18,19 @@ function App2() {
   var [signerAddr, setSignerAddr] = useState(undefined);
   var [LpStaked = [], setLpStaked] = useState(undefined);
   var [shareStaked = [], setShareStaked] = useState(undefined);
+  var [LpBalance = [], setLpBalance] = useState(undefined);
+  var [shareBalance = [], setShareBalance] = useState(undefined);
+  var [dollarBalance = [], setDollarBalance] = useState(undefined);
+
   
+  const ERC20ABI = [
+    // Read-Only Functions
+    "function balanceOf(address account) external view returns (uint256)",
+    "function symbol() view returns (string)",
+
+    // Authenticated Functions
+    "function approve(address spender, uint256 amount) external returns (bool)"
+  ]
 
   useEffect(() => {
     const init = async () => {
@@ -33,6 +45,9 @@ function App2() {
       const signer = provider.getSigner();
       const signerAddr = await signer.getAddress();
       console.log(signerAddr);
+      //LpBalance = await 
+
+
 
       // Instanciate an object representing the deployed Optimizer Factory 
       const optimizerFactory = new Contract(
@@ -79,16 +94,49 @@ function App2() {
           shareStaked.push(buffer.toString());
           console.log('Share Stake for Optimizer' ,i , ': ', shareStaked[i]);
 
+
+          var LpAddr = await optimizer.LP();
+          LpAddr = LpAddr.toString();
+          const LpContract = new Contract(
+            LpAddr,
+            ERC20ABI,
+            signer
+          );
+          console.log('LP Address :', LpAddr.toString())
+          
+          buffer = await LpContract.balanceOf(signerAddr);
+          LpBalance.push(buffer.toString())
+          console.log('LP Balance: ', LpBalance[i]);
+
+          var shareAddr = await optimizer.share();
+          shareAddr = shareAddr.toString();
+          const shareContract = new Contract(
+            shareAddr,
+            ERC20ABI,
+            signer
+          );
+          console.log('Share Address :', shareAddr.toString())
+          
+          buffer = await shareContract.balanceOf(signerAddr);
+          shareBalance.push(buffer.toString())
+          console.log('LP Balance: ', shareBalance[i]);
+          //await LpContract.approve(optimizer.address, -1);
+
+
+
           const optz = {
+            optimizer: optimizer,
             address: userOptimizers[i].toString(),
             LpStaked: LpStaked[i],
             shareStaked: shareStaked[i],
+            LpBalance: LpBalance[i],
+            shareBalance: shareBalance[i],
           }
           optimizers.push(optz);
           console.log(optz)
           setOptimizers(optimizers);
 
-          
+
         }
       }
 
@@ -107,7 +155,7 @@ function App2() {
       setOptimizerCount(optimizerCount);
       setProtocols(protocols);
       setUserOptimizers(userOptimizers);
-      setOptimizer(optimizer);
+      //setOptimizer(optimizer);
     // setLpStaked(LpStaked);
     // setShareStaked(shareStaked)
       console.log(optimizers.length)
@@ -137,17 +185,125 @@ function App2() {
       <br/>
       {optimizers.map((optimizer, index) => (
         <li key={index}> Optimizer {index} :
-        <br/>
+          <br/>
           <ul>
             <li>Address : {optimizer.address}</li>
-            <li>LpStaked: {optimizer.LpStaked}</li>
-            <li>shareStaked: {optimizer.shareStaked}</li>
+            <br/>
+            <li>LP Tokens: 
+              <p> Staked : {optimizer.LpStaked}</p>
+              <p> Available : {optimizer.LpBalance}</p>
+            </li>
+            <li>Share Tokens: 
+              <p> Staked : {optimizer.shareStaked}</p>
+              <p> Available : {optimizer.shareBalance}</p>
+            </li>            
+            <br/>
+            <h5> Approve LP Token :</h5>
+            <form className="form-inline" onSubmit={e => approveLP(optimizer.optimizer)}>
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+              >
+                Approve
+              </button>
+            </form>
+            <br/>
+            <h5> Deposit LP Token :</h5>
+            <form className="form-inline" onSubmit={e => depositLP(e, optimizer.optimizer)}>
+              <input 
+                type="number" 
+                className="form-control" 
+                placeholder="Amount to Deposit"
+              />                  
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+              >
+                Deposit LP
+              </button>
+            </form>
+            <br/>
+            <h5> Withdraw LP Token :</h5>
+            <form className="form-inline" onSubmit={e => withdrawLP(e, optimizer.optimizer)}>
+              <input 
+                type="number" 
+                className="form-control" 
+                placeholder="Amount to Withdraw"
+              />                  
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+              >
+                Withdraw LP
+              </button>
+            </form>
+            <br/>
+            <h5> Deposit Share Token :</h5>
+            <form className="form-inline" onSubmit={e => depositShare(e, optimizer.optimizer)}>
+              <input 
+                type="number" 
+                className="form-control" 
+                placeholder="Amount to Deposit"
+              />                  
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+              >
+                Deposit Share
+              </button>
+            </form>
+            <br/>
+            <h5> Withdraw All Share Token :</h5>
+            <form className="form-inline" onSubmit={e => withdrawAllShare(e, optimizer.optimizer)}>           
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+              >
+                Withdraw Share
+              </button>
+            </form>
           </ul>
         </li>
       ))}
 
     </>
   );
+
+  const approveLP = async (e, optimizer) => {
+  //  
+  //  console.log('ici ', LpContract.balanceOf(optimizer.owner))
+//
+  //  const tx = await LpContract.approve(optimizer.address, 100);
+  //  await tx.wait();
+  //  console.log('ici ', LpContract.balanceOf(optimizer.owner))
+  };
+
+  const depositLP = async (e, optimizer) => {
+    e.preventDefault();
+    const data = e.target.elements[0].value;
+    const tx = await optimizer.depositLP(data);
+    await tx.wait();
+  };
+
+  const withdrawLP = async (e, optimizer) => {
+    e.preventDefault();
+    const data = e.target.elements[0].value;
+    const tx = await optimizer.withdrawLP(data);
+    await tx.wait();
+  };
+
+  const depositShare = async (e, optimizer) => {
+    e.preventDefault();
+    const data = e.target.elements[0].value;
+    const tx = await optimizer.depositShare(data);
+    await tx.wait();
+  };
+
+  const withdrawAllShare = async (optimizer) => {
+    const tx = await optimizer.withdrawShare();
+    await tx.wait();
+  };
+
 
   const createOptimizer = async e => {
     e.preventDefault();
